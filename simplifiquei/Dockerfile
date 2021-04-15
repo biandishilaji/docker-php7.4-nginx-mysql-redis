@@ -1,4 +1,7 @@
-FROM php:7.3-fpm
+FROM php:7.4-fpm
+
+RUN apt-get update && apt-get install -y libpq-dev
+RUN docker-php-ext-install pdo pdo_pgsql pgsql  
 
 # Install and enable xDebug
 RUN pecl install xdebug
@@ -11,6 +14,8 @@ RUN chmod 777 /var/log/xdebug_remote.log
 RUN \
   apt-get -y install tzdata && \
   ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+
+RUN rm /etc/apt/preferences.d/no-debian-php && apt-get update && apt-get install -y libxml2-dev php-soap && docker-php-ext-install soap
 
 # # Copy composer.lock and composer.json
 # COPY composer.lock composer.json /var/www/
@@ -33,6 +38,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
+    libonig-dev \
     libzip-dev 
 
 # Clear cache
@@ -40,9 +46,10 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install extensions
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath mysqli sockets imap
+RUN docker-php-ext-install pdo_mysql zip exif pcntl bcmath mysqli sockets imap
 
-RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
 RUN docker-php-ext-install gd
 
 # RUN docker-php-ext-install redis
